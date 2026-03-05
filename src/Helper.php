@@ -24,7 +24,8 @@ Trait QueryBuilderHelper{
         "1007" => " Must include where when you use update",
         "1008" => " You want to DELETE without WHERE!!??",
         "1009" => " Error with DB, details: ",
-        "1010" => " You must create at lease one query!"
+        "1010" => " You must create at lease one query!",
+        "1011" => " Queries count must be the same as params arraies, if there is not params, add empty array []"
     ];
 
     const WARNING_CODES = [

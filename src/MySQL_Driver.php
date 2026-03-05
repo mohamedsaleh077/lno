@@ -68,12 +68,38 @@ class MySQL_Driver {
 
     // public functions
     // getting all raws or one raw
-    public static function Fetch(string $sql, array $params = [], bool $all = false): array | bool
+    public static function Fetch(string $sql, array $params = [], bool $all = false): array
     {
-        if($all){
-            return self::execute($sql, $params)->fetchAll();
+        $stm = self::execute($sql, $params);
+        $result = [
+            "ok" => 0,
+            "edited" => 0,
+            "results" => []
+        ];
+        // if INSERT/UPDATE/DELETE
+        if($stm->columnCount() === 0){
+            $result["edited"] = $stm->rowCount();
+            $result["ok"] = $result["edited"] > 0;
+            if(str_starts_with($sql, "INSERT")){
+                $result["lastID"] = self::lastInsertId();
+            }
         }
-        return self::execute($sql, $params)->fetch(FETCH_ASSOC);
+        
+        // if SELECT
+        $r = [];
+        if($all){
+            $r = $stm->fetchAll(PDO::FETCH_ASSOC);
+            $result["len"] = count($r);
+        } else {
+            $r = $stm->fetch(PDO::FETCH_ASSOC);
+        }
+        
+        if(!empty($r)){
+            $result["ok"] = 1;
+            $result["results"] = $r;            
+        }
+
+        return $result;
     }
 
     // last insert id

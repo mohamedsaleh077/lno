@@ -304,5 +304,16 @@ rollback again.
 $oneQuery = [ "id" => 3, "col1" => "nnanan" ];
 $manyQueries = [ ["c1" => 1 ], [], ["name" => "mohamed", "age" => 34] ];
 
-$sql->callDB($manyQueries, true); // for example
+$result = $sql->callDB($manyQueries, true); // for example
+```
+- results for each query will be in an array.
+- each query will have a result array formed as:
+```php
+$result = [
+    "ok" => 0, // success or fail, affected or not. db error will throw exception
+    "lastID" => 0, // last inserted ID, in insert statment only
+    "edited" => 0, // count of afftected raws
+    "len" => 0, // length of results, when $all is true.
+    "results" => [] // results for SELECT
+];
 ```

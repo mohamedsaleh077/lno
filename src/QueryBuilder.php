@@ -442,28 +442,33 @@ class QueryBuilder
      * notes:
      * - [ ["p1" => "val1"], ["p2", "val2"] ]=> set val1 for :p1 in the first query, set val2 for :p2 in the secound one.
      * - each query should have its array, [ [values for 1st query], [2ed query]]
+     * - for one query, just normal array ["user" => "username"] etc..
      * * @return array return the results.
      */
-    public function callDB(array $params, bool $all = false) : array | bool
+    public function callDB(array $params, bool $all = false) : array
     {
         if(!empty($this->query)){
             $this->saveQuery();
         }
         if(empty($this->queries)){
-            $this->errorHandler(1010, "literally null.");
+            $this->errorHandler(1010, "no Queries to Execute.");
         }
         $result = [];
         try {
             $this->db::beginTransaction();
-            if(is_array($params[0])){
+            if(isset($params[0]) && is_array($params[0])){
+                if(count($params) !== count($this->queries)){
+                    $this->errorHandler(1011, "params: " . count($params) . " queries: " . count($this->queries) );
+                }
                 foreach ($this->queries as $key => $value) {
                     $result[] = $this->db::Fetch($value, $params[$key], $all);
                 }
             }else{
-                $result = $this->db::Fetch($params[0], $params, $all);
+                $result = $this->db::Fetch($this->queries[0], $params, $all);
             }
             $this->db::commit();
-        }catch(\PDOException $e){
+            $this->queries = [];
+        }catch(\Throwable $e){
                 $this->db::rollback();
                 $this->errorHandler(1009, $e->getMessage());
         }
