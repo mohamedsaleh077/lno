@@ -5,6 +5,9 @@ write SQL, without the unlimited complexity in the big Frameworks, just write a
 human-readable code and boom, you have SQL Query without Syntax errors and talk to your
 Database with the most secure way and Best practicies. also Lightweight you know?
 
+- on composer: https://packagist.org/packages/mohamedsaleh077/lno
+- [AI Enhanced Documentation](./AI.md)
+
 ## Why I made LNO?
 I just wanted to keep using pure PHP until I become good enough in OOP, MVC and most of 
 backend concepts that Framework hide from you.
