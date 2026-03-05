@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace LNO\src;
+namespace Mohamedsaleh077\Lno;
 
 interface DatabaseInterface {
     public static function Fetch(string $sql, array $params = [], bool $all = false): array | bool;
@@ -11,6 +11,8 @@ interface DatabaseInterface {
 }
 
 Trait QueryBuilderHelper{
+    private bool $showWarnings = false;
+
     const ERROR_CODES = [
         "1000" => " Using * to be aliased is ILLEGAL BRO! you can not say AS thing, that is INSANE!",
         "1001" => " Using table.column.your_mom as a column address is ILLEGAL, use Table.Column.",
@@ -21,7 +23,8 @@ Trait QueryBuilderHelper{
         "1006" => " Must have where when you are using select with insert",
         "1007" => " Must include where when you use update",
         "1008" => " You want to DELETE without WHERE!!??",
-        "1009" => " Error with DB, details: "
+        "1009" => " Error with DB, details: ",
+        "1010" => " You must create at lease one query!"
     ];
 
     const WARNING_CODES = [

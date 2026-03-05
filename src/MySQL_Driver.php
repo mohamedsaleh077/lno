@@ -2,14 +2,14 @@
 declare(strict_types=1);
 // I used https://github.com/Wagner-Souza/eloquent-orm/blob/main/orm/Database.php as a reference
 
-namespace LNO\src;
+namespace Mohamedsaleh077\Lno;
 
 use PDO;
 use PDOException;
 use PDOStatement;
 use RuntimeException;
 
-class Database {
+class MySQL_Driver {
     private static $config;
     private static $connection;
 

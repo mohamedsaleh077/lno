@@ -1,15 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace LNO\src;
+namespace Mohamedsaleh077\Lno;
 use Exception;
 
 class QueryBuilder
 {
-    public array $queries;
-    public array $query;
-    private array $whereParams;
-    private bool $showWarnings;
+    private array $queries;
+    private array $query;
 
     const SQL_RESERVED = [
         'NULL',
@@ -27,8 +25,8 @@ class QueryBuilder
 
     /**
      * @param DatabaseInterface $db you need to pass the class that will handle the database,
-     * this class should have these methods:
-     * FetchAll, FetchOne, beginTransaction, commit, rollback.
+     * this class should have these static methods:
+     * Fetch, beginTransaction, commit, rollback.
      */
     public function __construct(private DatabaseInterface $db)
     {
@@ -109,7 +107,7 @@ class QueryBuilder
      * @param array<int|string, string> $columns An associative or indexed array of columns.
      * Format examples:
      * - [ "table.col1", "=", "param1" ] => `table`.`col1` = :param1
-     * - [ ["t.a", "<", "p1"], "and", [ "t.b", "!=", "p2" ] ] => ((`t`.`a` < :p1) AND (`t`.`b` != :p2))
+     * - [ ["t.a", ">", "p1"], "and", [ "t.b", "!=", "p2" ] ] => ((`t`.`a` < :p1) AND (`t`.`b` != :p2))
      * - [ ["{RAW_SQL}", "=", "null"], "and", [ [ "t.b", "!=", "p2" ], 'or', ["t.b", "like", "te"] ] ]
      * ((RAW_SQL = NULL) AND ((`t`.`b` != :p2) OR (`t`.`b` LIKE :te)))
      * * @warning 5000 Triggers if using {RAW_CODE}, you will be responsible for what you write, I will not touch what
@@ -446,8 +444,14 @@ class QueryBuilder
      * - each query should have its array, [ [values for 1st query], [2ed query]]
      * * @return array return the results.
      */
-    public function callDB(array $params, bool $all = false) : array
+    public function callDB(array $params, bool $all = false) : array | bool
     {
+        if(!empty($this->query)){
+            $this->saveQuery();
+        }
+        if(empty($this->queries)){
+            $this->errorHandler(1010, "literally null.");
+        }
         $result = [];
         try {
             $this->db::beginTransaction();
@@ -460,7 +464,7 @@ class QueryBuilder
             }
             $this->db::commit();
         }catch(\PDOException $e){
-                $db::rollback();
+                $this->db::rollback();
                 $this->errorHandler(1009, $e->getMessage());
         }
 
