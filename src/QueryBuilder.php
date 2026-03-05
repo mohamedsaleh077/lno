@@ -1,7 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace LNO;
+namespace LNO\src;
+use Exception;
+
 class QueryBuilder
 {
     public array $queries;

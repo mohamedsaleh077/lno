@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace LNO;
+namespace LNO\src;
 
 interface DatabaseInterface {
     public static function Fetch(string $sql, array $params = [], bool $all = false): array | bool;
@@ -38,7 +38,7 @@ Trait QueryBuilderHelper{
     private function errorHandler(int $errorCode, string $code): void
     {
         $code = "\nError here:\n" . $code . "\n";
-        throw new Exception($errorCode . self::ERROR_CODES[$errorCode] . $code, $errorCode);
+        throw new \Exception($errorCode . self::ERROR_CODES[$errorCode] . $code, $errorCode);
     }
 
     private function warningHandler(int $warningCode, string $code): void

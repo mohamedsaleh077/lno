@@ -1,4 +1,5 @@
-# LNO (LNO Not ORM)
+# LNO 
+### LNO Not ORM
 Simple Library to turn warp SQL in a smart way. Carries the heavy left from you when you
 write SQL, without the unlimited complexity in the big Frameworks, just write a 
 human-readable code and boom, you have SQL Query without Syntax errors and talk to your
@@ -27,8 +28,11 @@ I started with a very basic one but I found it useless so I remade it.
 - Dependency Injection for DB Driver.
 
 ## Requirements
-- PHP 8.0 or later.
+- PHP 8.2 or later.
 
 ## Quick Start
 ### Installation
-Just use composer, 
+Just use composer, install the package `mohamedsaleh077/lno `.
+```json
+
+```

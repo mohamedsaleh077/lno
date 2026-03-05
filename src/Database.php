@@ -2,12 +2,12 @@
 declare(strict_types=1);
 // I used https://github.com/Wagner-Souza/eloquent-orm/blob/main/orm/Database.php as a reference
 
-namespace LNO;
+namespace LNO\src;
 
 use PDO;
 use PDOException;
-use RuntimeException;
 use PDOStatement;
+use RuntimeException;
 
 class Database {
     private static $config;
