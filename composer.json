@@ -1,0 +1,19 @@
+{
+    "name": "mohamedsaleh077/lno",
+    "description": "Lightweight Advanced and Smart QueryBuilder",
+    "type": "library",
+    "license": "GPL-3.0-or-later",
+    "autoload": {
+        "psr-4": {
+            "Mohamedsaleh077\\Lno\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Mohammed Saleh",
+            "email": "mohammed.saleh@tuta.io"
+        }
+    ],
+    "minimum-stability": "beta",
+    "require": {}
+}
