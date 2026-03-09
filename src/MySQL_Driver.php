@@ -2,6 +2,7 @@
 declare(strict_types=1);
 // I used https://github.com/Wagner-Souza/eloquent-orm/blob/main/orm/Database.php as a reference
 namespace Mohamedsaleh077\Lno;
+use Mohamedsaleh077\Lno\DatabaseInterface;
 
 use PDO;
 use PDOException;
