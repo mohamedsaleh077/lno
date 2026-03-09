@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Mohamedsaleh077\Lno;
 use Exception;
+use Mohamedsaleh077\Lno\QueryBuilderHelper;
+use Mohamedsaleh077\Lno\DatabaseInterface;
 
 class QueryBuilder
 {
