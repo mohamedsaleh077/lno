@@ -36,7 +36,7 @@ implements DatabaseInterface
     {
         $dsn = sprintf(
             'mysql:host=%s;port=%s;dbname=%s;charset=%s',
-            self::$config["db"]['dbhost'],
+            self::$config['dbhost'],
             self::$config['port'] ?? 3306,
             self::$config['dbname'],
             self::$config['charset'] ?? 'utf8'
