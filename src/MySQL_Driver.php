@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 // I used https://github.com/Wagner-Souza/eloquent-orm/blob/main/orm/Database.php as a reference
-
 namespace Mohamedsaleh077\Lno;
 
 use PDO;
@@ -9,7 +8,9 @@ use PDOException;
 use PDOStatement;
 use RuntimeException;
 
-class MySQL_Driver {
+class MySQL_Driver
+implements DatabaseInterface
+{
     private static $config;
     private static $connection;
 
@@ -35,9 +36,9 @@ class MySQL_Driver {
         $dsn = sprintf(
             'mysql:host=%s;port=%s;dbname=%s;charset=%s',
             self::$config["db"]['dbhost'],
-            self::$config["db"]['port'] ?? 3306,
-            self::$config["db"]['dbname'],
-            self::$config["db"]['charset'] ?? 'utf8'
+            self::$config['port'] ?? 3306,
+            self::$config['dbname'],
+            self::$config['charset'] ?? 'utf8'
         );
 
         try {
