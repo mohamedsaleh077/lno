@@ -82,7 +82,7 @@ implements DatabaseInterface
         if($stm->columnCount() === 0){
             $result["edited"] = $stm->rowCount();
             $result["ok"] = $result["edited"] > 0;
-            if(str_starts_with($sql, "INSERT")){
+            if(str_starts_with($sql, " INSERT")){
                 $result["lastID"] = self::lastInsertId();
             }
         }
