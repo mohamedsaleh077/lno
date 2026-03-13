@@ -1,0 +1,147 @@
+<?php
+
+namespace Mohamedsaleh077\Lno;
+use Mohamedsaleh077\Lno\DatabaseInterface;
+use Mohamedsaleh077\Lno\QueryBuilderHelper;
+
+class OP
+{
+    protected array $queries = [];
+    protected array $query = [];
+    protected array $params = [];
+    protected int $paramsCount = 0;
+
+    // Import Helper Trait
+    use QueryBuilderHelper;
+
+    public function __construct(private DatabaseInterface $db){
+    }
+
+    public function __toString(): string
+    {
+        return "{ " . $this->buildQuery() . " }";
+    }
+
+    public function buildQuery() : string
+    {
+        $result = [];
+        $query = [];
+        if(isset($this->query["rawsql"])){
+            foreach($this->query["rawsql"] as $key => $value){
+                $query[$key] = $value;
+            }
+        }
+
+        if(isset($this->query["delete"])){
+            if(!isset($this->query["where"])){
+                $this->errorHandler(1008, "");
+            }
+            if(isset($this->query["delete"])) $result[] = $this->query["delete"];
+            if(isset($this->query["where"])) $result[] = $this->query["where"];
+        }else if(isset($this->query["update"])){
+            if(!isset($this->query["where"])){
+                $this->errorHandler(1007, "");
+            }
+            if(isset($this->query["update"])) $result[] = $this->query["update"];
+            if(isset($this->query["where"])) $result[] = $this->query["where"];
+        } else if(isset($this->query["insert"])){
+
+            if(!isset($this->query["select"]) && !isset($this->query["values"])){
+                $this->errorHandler(1005, "");
+            }
+
+            if(isset($this->query["select"]) && !isset($this->query["where"])){
+                $this->errorHandler(1006, "");
+            }
+
+            if(isset($this->query["insert"])) $result[] = $this->query["insert"];
+            if(isset($this->query["values"])) array_push($result, " VALUES ", implode(",", $this->query["values"]));
+            if(isset($this->query["select"])) $result[] = $this->query["select"];
+            if(isset($this->query["where"])) $result[] = $this->query["where"];
+        }else{
+            if(isset($this->query["select"])){
+                $result[] = $this->query["select"];
+                if(isset($this->query["joins"]))    array_push($result, ...$this->query["joins"]);
+                if(isset($this->query["where"]))    $result[] = $this->query["where"];
+                if(isset($this->query["groupby"]))  $result[] = $this->query["groupby"];
+                if(isset($this->query["having"]))   $result[] = $this->query["having"];
+                if(isset($this->query["orderby"]))  $result[] = $this->query["orderby"];
+                if(isset($this->query["limit"]))    $result[] = $this->query["limit"];
+            }else{
+                $this->errorHandler(1012, "");
+            }
+        }
+
+        $index = 0;
+        foreach($result as $part){
+            while(isset($query[$index])){
+                $index++;
+            }
+            $query[$index] = $part;
+        }
+
+        ksort($query);
+        $query = array_filter($query);
+
+        return implode(" ", $query);
+    }
+
+    public function saveQuery(): self
+    {
+        $this->queries[] = $this->BuildQuery();
+
+        if(isset($this->queries["union"])){
+            $len = count($this->queries);
+            $newArr = [$this->queries[$len - 3], $this->queries["union"], $this->queries[$len - 2]];
+            unset($this->queries[$len - 3]);
+            unset($this->queries["union"]);
+            unset($this->queries[$len - 2]);
+            $this->queries[] = implode(" ", $newArr);
+        }
+        $this->query = [];
+
+        return $this;
+    }
+
+
+    /**
+     * Execute all Queries.
+     * * @param array $params for placeholders and values.
+     * notes:
+     * - [ ["p1" => "val1"], ["p2", "val2"] ]=> set val1 for :p1 in the first query, set val2 for :p2 in the secound one.
+     * - each query should have its array, [ [values for 1st query], [2ed query]]
+     * - for one query, just normal array ["user" => "username"] etc..
+     * * @return array return the results.
+     */
+    public function callDB(array $params, bool $all = false) : array
+    {
+        if(!empty($this->query)){
+            $this->saveQuery();
+        }
+        if(empty($this->queries)){
+            $this->errorHandler(1010, "no Queries to Execute.");
+        }
+        $result = [];
+        try {
+            $this->db::beginTransaction();
+            if(isset($params[0]) && is_array($params[0])){
+                if(count($params) !== count($this->queries)){
+                    $this->errorHandler(1011, "params: " . count($params) . " queries: " . count($this->queries) );
+                }
+                foreach ($this->queries as $key => $value) {
+                    $result[] = $this->db::Fetch($value, $params[$key], $all);
+                }
+            }else{
+                $result = $this->db::Fetch($this->queries[0], $params, $all);
+            }
+            $this->db::commit();
+            $this->queries = [];
+        }catch(\Throwable $e){
+            $this->db::rollback();
+            $this->errorHandler(1009, $e->getMessage());
+        }
+
+        return $result;
+    }
+
+}
