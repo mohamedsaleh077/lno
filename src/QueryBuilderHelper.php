@@ -18,7 +18,8 @@ Trait QueryBuilderHelper{
         "1008" => " You want to DELETE without WHERE!!??",
         "1009" => " Error with DB, details: ",
         "1010" => " You must create at lease one query!",
-        "1011" => " Queries count must be the same as params arraies, if there is not params, add empty array []"
+        "1011" => " Queries count must be the same as params arraies, if there is not params, add empty array []",
+        "1012" => " You must create at lease one query!",
     ];
 
     const WARNING_CODES = [
@@ -32,13 +33,13 @@ Trait QueryBuilderHelper{
         $this->showWarnings = $enable;
     }
 
-    private function errorHandler(int $errorCode, string $code): void
+    protected function errorHandler(int $errorCode, string $code): void
     {
         $code = "\nError here:\n" . $code . "\n";
         throw new \Exception($errorCode . self::ERROR_CODES[$errorCode] . $code, $errorCode);
     }
 
-    private function warningHandler(int $warningCode, string $code): void
+    protected function warningHandler(int $warningCode, string $code): void
     {
         if ($this->showWarnings){
             $code = "\nWarning here:\n" . $code . "\n";
@@ -46,7 +47,7 @@ Trait QueryBuilderHelper{
         }
     }
 
-    private function dotSplitter(string $string): string
+    protected function dotSplitter(string $string): string
     {
         $string = trim($string, " ");
         $result = "";
@@ -65,7 +66,7 @@ Trait QueryBuilderHelper{
         return $result;
     }
 
-    private function starProcess(string $string): string
+    protected function starProcess(string $string): string
     {
         if ($string === "*") {
             return $string;
