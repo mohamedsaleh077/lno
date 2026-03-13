@@ -279,11 +279,11 @@ class QueryBuilder extends OP
      * this will add a UNION, start a new query after that.
      * * @return self Returns $this for chaining.
      */
-    public function union(string $all = ""): self
+    public function union(bool $all = false): self
     {
         $this->union = true;
         $this->saveQuery();
-        $this->queries["union"] = "UNION " . strtoupper($all);
+        $this->queries["union"] = "UNION " . ($all ? "ALL" : "");
         return $this;
     }
 
