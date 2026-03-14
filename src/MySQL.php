@@ -10,10 +10,9 @@ use PDOException;
 use PDOStatement;
 use RuntimeException;
 
-class MySQL_Driver
+class MySQL
 implements DatabaseInterface
 {
-    private static $config;
     private static $connection;
 
     /**
@@ -39,7 +38,7 @@ implements DatabaseInterface
         $dsn = sprintf(
             'mysql:host=%s;port=%s;dbname=%s;charset=%s',
             $_ENV['MYSQL_HOST'] ?? getenv('MYSQL_HOST') ?? 'localhost',
-            $_ENV['MYSQL_PORT'] ?? getenv('MYSQL_PORT') ?? 3306,
+            $_ENV['MYSQL_PORT'] ?? getenv('MYSQL_PORT') ?? "3306",
             $_ENV['MYSQL_DATABASE'] ?? getenv('MYSQL_DATABASE'),
             $_ENV['MYSQL_CHARSET'] ?? getenv('MYSQL_CHARSET') ??'utf8'
         );
