@@ -8,7 +8,6 @@ use Exception;
 //use Mohamedsaleh077\Lno\QueryBuilderHelper;
 //use Mohamedsaleh077\Lno\DatabaseInterface;
 
-#[AllowDynamicProperties]
 class QueryBuilder extends OP
 {
     public bool $subOb = false;
@@ -180,6 +179,17 @@ class QueryBuilder extends OP
             }
         }
         return $result;
+    }
+
+    public function withSQL(array $queries): self
+    {
+        $result = [];
+        foreach ($queries as $key => $value){
+            $result[] = $key . " AS " . "(" . preg_replace('/[{}]/', '',$value) . ")";
+        }
+        $this->query["with"] = "WITH " . implode(", ", $result);
+
+        return $this;
     }
 
     /**

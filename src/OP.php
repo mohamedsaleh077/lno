@@ -59,6 +59,9 @@ class OP
             if(isset($this->query["select"])) $result[] = $this->query["select"];
             if(isset($this->query["where"])) $result[] = $this->query["where"];
         }else{
+            if(isset($this->query["with"])){
+                $result[] = $this->query["with"];
+            }
             if(isset($this->query["select"])){
                 $result[] = $this->query["select"];
                 if(isset($this->query["joins"]))    array_push($result, ...$this->query["joins"]);
@@ -116,15 +119,8 @@ class OP
         $result = [];
         try {
             $this->db::beginTransaction();
-            if(isset($params[0]) && is_array($params[0])){
-                if(count($params) !== count($this->queries)){
-                    $this->errorHandler(1011, "params: " . count($params) . " queries: " . count($this->queries) );
-                }
-                foreach ($this->queries as $key => $value) {
-                    $result[] = $this->db::Fetch($value, $params[$key], $all);
-                }
-            }else{
-                $result = $this->db::Fetch($this->queries[0], $params, $all);
+            foreach ($this->queries as $key => $value) {
+                $result[] = $this->db::Fetch($key, $value, $all);
             }
             $this->db::commit();
             $this->queries = [];
