@@ -274,20 +274,6 @@ class QueryBuilder extends OP
     }
 
     /**
-     * Build the UNION part of the query.
-     * * @param string $all UNION ALL or UNION.
-     * this will add a UNION, start a new query after that.
-     * * @return self Returns $this for chaining.
-     */
-    public function union(bool $all = false): self
-    {
-        $this->union = true;
-        $this->saveQuery();
-        $this->queries["union"] = "UNION " . ($all ? "ALL" : "");
-        return $this;
-    }
-
-    /**
      * Build any SQL part.
      * * @param string $sql for RAW SQL.
      * if you want to add something doesn't exsits, you can write a RAW SQL on your risk.
@@ -326,7 +312,12 @@ class QueryBuilder extends OP
     public function values(array $values): self
     {
         if(isset($this->query["select"])) $this->errorHandler(1004, "");
-        $this->query["values"][] = "( :" . implode(", :", $values) . " )";
+
+        $parms = [];
+        foreach ($values as $value){
+            $parms[] = $this->setParams($value);
+        }
+        $this->query["values"][] = "(" . implode(", ", $parms) . ")";
         return $this;
     }
 
@@ -349,11 +340,8 @@ class QueryBuilder extends OP
 
         $result = [];
         foreach($columns as $key => $value){
-            if(is_int($key)){
-                $result[] = "`" . $value . "` = :" . $value;
-            } else {
-                $result[] = "`" . $key ."` = :" . $value;
-            }
+                $result[] = "`" . $key ."` = " . $this->setParams($value);
+
         }
         $this->query["update"] =  "UPDATE `" . $table . "` SET" . implode(", ", $result);
         return $this;
