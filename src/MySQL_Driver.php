@@ -3,6 +3,7 @@ declare(strict_types=1);
 // I used https://github.com/Wagner-Souza/eloquent-orm/blob/main/orm/Database.php as a reference
 namespace Mohamedsaleh077\Lno;
 use Mohamedsaleh077\Lno\DatabaseInterface;
+use Dotenv\Dotenv;
 
 use PDO;
 use PDOException;
@@ -18,8 +19,9 @@ implements DatabaseInterface
     /**
      * @param string $config pass the config.ini file path, DOCUMENT_ROOT included.
      */
-    public function __construct(string $config) {
-        self::$config = parse_ini_file($_SERVER["DOCUMENT_ROOT"] . $config, true);
+    public function __construct() {
+        $dotenv = Dotenv::createImmutable((isset($_SERVER['DOCUMENT_ROOT'])) ? __DIR__ . "/../" : $_SERVER['DOCUMENT_ROOT']);
+        $dotenv->load();
     }
     // check for connection
     public static function getConnection(): PDO
@@ -36,17 +38,17 @@ implements DatabaseInterface
     {
         $dsn = sprintf(
             'mysql:host=%s;port=%s;dbname=%s;charset=%s',
-            self::$config['dbhost'],
-            self::$config['port'] ?? 3306,
-            self::$config['dbname'],
-            self::$config['charset'] ?? 'utf8'
+            $_ENV['MYSQL_HOST'] ?? 'localhost',
+            $_ENV['MYSQL_PORT'] ?? 3306,
+            $_ENV['MYSQL_DATABASE'],
+            $_ENV['MYSQL_CHARSET'] ?? 'utf8'
         );
 
         try {
             self::$connection = new PDO(
                 $dsn,
-                self::$config['username'],
-                self::$config['password'],
+                $_ENV['MYSQL_USER'],
+                $_ENV['MYSQL_PASSWORD'],
                 [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,

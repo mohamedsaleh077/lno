@@ -9,6 +9,10 @@
             "Mohamedsaleh077\\Lno\\": "src/"
         }
     },
+    "require": {
+        "php": ">=8.2",
+        "vlucas/phpdotenv": "v5.6.3"
+    },
     "authors": [
         {
             "name": "Mohammed Saleh",
@@ -16,5 +20,8 @@
         }
     ],
     "minimum-stability": "stable",
-    "require": {}
+    "require": {
+        "wpscholar/phpdotenv": "*",
+        "vlucas/phpdotenv": "^5.6"
+    }
 }
