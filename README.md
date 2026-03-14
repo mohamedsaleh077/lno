@@ -61,6 +61,8 @@ $result = $sql->select("users")
 ```
 expected result for the SQL: `SELECT * FROM users WHERE id = :p1`.
 
+**Note:** Do not forget to add `.env` in the root directory or in parent directory.
+
 ## All use cases Explaining
 ### Warnings Enable
 warnings are enabled by default, to disable it:
