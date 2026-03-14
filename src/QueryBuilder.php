@@ -35,17 +35,6 @@ class QueryBuilder extends OP
         parent::__construct($db);
     }
 
-    protected function setParams($value): string
-    {
-        if($this->subOb === true){
-            return $this->parent->setParams($value);
-        }
-        $result = ":p" . $this->paramsCount;
-        $this->params[$result] = $value;
-        $this->paramsCount++;
-        return $result;
-    }
-
     /**
      * Build the SELECT part of the query.
      * * @param string | array $tableName The main table name or tablename AS alias ["table", "alias"].
@@ -181,6 +170,13 @@ class QueryBuilder extends OP
         return $result;
     }
 
+    /**
+     * For WITH part
+     * @param array $queries
+     * example
+     * [ "CTA1" => "{$subQuery->()->()->()}", "CTA2" => "{$subQuery->()->()}" ]
+     * @return $this
+     */
     public function withSQL(array $queries): self
     {
         $result = [];
@@ -371,6 +367,10 @@ class QueryBuilder extends OP
         return $this;
     }
 
+    /**
+     * Start new Instance and create sub query
+     * @return self
+     */
     public function subQuery(): object
     {
         $sub = new self($this->db);
