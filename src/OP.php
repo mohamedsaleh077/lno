@@ -70,6 +70,7 @@ class OP
             if(isset($this->query["values"])) array_push($result, " VALUES ", implode(",", $this->query["values"]));
             if(isset($this->query["select"])) $result[] = $this->query["select"];
             if(isset($this->query["where"])) $result[] = $this->query["where"];
+            if($this->db->DBType() === "pgsql") $result[] = ' RETURNING "id"';
         }else{
             if(isset($this->query["with"])){
                 $result[] = $this->query["with"];
