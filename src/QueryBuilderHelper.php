@@ -58,6 +58,15 @@ Trait QueryBuilderHelper{
         return $value;
     }
 
+    protected function quoteArray(array $values): array
+    {
+        $result = [];
+        foreach ($values as $value){
+            $result[] = $this->quote($value);
+        }
+        return $result;
+    }
+
     protected function dotSplitter(string $string): string
     {
         $string = trim($string, " ");

@@ -93,9 +93,11 @@ class QueryBuilder extends OP
         $columnsString = implode(", ", $result);
 
         if (is_array($tableName)) {
-            $tableName = implode(" AS ", $this->quote($tableName));
+            $tableName = implode(" AS ", $this->quoteArray($tableName));
+        }else{
+            $tableName = $this->quote($tableName);
         }
-        $this->query["select"] = "SELECT " . $columnsString . " FROM " . $this->quote($tableName) ;
+        $this->query["select"] = "SELECT " . $columnsString . " FROM " . $tableName ;
         return $this;
     }
 
@@ -302,7 +304,7 @@ class QueryBuilder extends OP
         if(!empty($this->query)){
             $this->saveQuery();
         }
-        $fields = implode(", ", $this->quote($columns));
+        $fields = implode(", ", $this->quoteArray($columns));
         $this->query["insert"] = " INSERT INTO " . $this->quote($tableName) . " (" . $fields . ")";
         return $this;
     }
