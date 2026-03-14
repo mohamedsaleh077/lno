@@ -13,7 +13,8 @@ implements DatabaseInterface
             "params" => $params,
             "all" => $all,
         ];
-        return $r;
+        print_r($r);
+        return true;
     }
 
     public static function beginTransaction(): bool
