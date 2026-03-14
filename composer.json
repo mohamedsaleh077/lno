@@ -15,6 +15,6 @@
             "email": "mohammed.saleh@tuta.io"
         }
     ],
-    "minimum-stability": "beta",
+    "minimum-stability": "stable",
     "require": {}
 }
