@@ -6,6 +6,7 @@ use Mohamedsaleh077\Lno\QueryBuilderHelper;
 
 class OP
 {
+    public bool $subOb = false;
     protected array $queries = [];
     protected array $query = [];
     protected array $params = [];

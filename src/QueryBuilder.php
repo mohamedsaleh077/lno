@@ -10,7 +10,6 @@ use Exception;
 
 class QueryBuilder extends OP
 {
-    public bool $subOb = false;
     const SQL_RESERVED = [
         'NULL',
         'TRUE',
