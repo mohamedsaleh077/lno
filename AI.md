@@ -37,10 +37,10 @@ Lno requires an implementation of `DatabaseInterface`. You can use the provided 
 
 ```php
 use Mohamedsaleh077\Lno\QueryBuilder;
-use Mohamedsaleh077\Lno\MySQL_Driver;
+use Mohamedsaleh077\Lno\MySQL;
 
 // Initialize the driver with a path to your config.ini
-$db = new MySQL_Driver('/config.ini'); 
+$db = new MySQL('/config.ini'); 
 $qb = new QueryBuilder($db);
 ```
 
