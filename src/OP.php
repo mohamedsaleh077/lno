@@ -88,17 +88,9 @@ class OP
 
     public function saveQuery(): self
     {
-        $this->queries[] = $this->BuildQuery();
-
-        if(isset($this->queries["union"])){
-            $len = count($this->queries);
-            $newArr = [$this->queries[$len - 3], $this->queries["union"], $this->queries[$len - 2]];
-            unset($this->queries[$len - 3]);
-            unset($this->queries["union"]);
-            unset($this->queries[$len - 2]);
-            $this->queries[] = implode(" ", $newArr);
-        }
+        $this->queries[$this->BuildQuery()] = $this->params;
         $this->query = [];
+        $this->params = [];
 
         return $this;
     }
@@ -113,7 +105,7 @@ class OP
      * - for one query, just normal array ["user" => "username"] etc..
      * * @return array return the results.
      */
-    public function callDB(array $params, bool $all = false) : array
+    public function callDB(bool $all = false) : array
     {
         if(!empty($this->query)){
             $this->saveQuery();
