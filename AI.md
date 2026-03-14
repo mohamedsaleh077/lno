@@ -1,162 +1,192 @@
-#  LNO (Lightweight Native Objects)
+# Lno Query Builder: High-Performance Fluent SQL for PHP
 
-### "SQL, but smarter. Not an ORM, just better."
-
-**LNO** is a lightweight PHP library designed to bridge the gap between pure SQL and complex ORMs. It handles the heavy lifting of SQL syntax, escaping, and security, while keeping your code human-readable and efficient.
+**Lno** is a lightweight, high-performance PHP Query Builder designed for developers who need the power of complex SQL without the overhead of heavy ORMs like Eloquent or Doctrine. It provides a fluent, expressive API for building sophisticated queries while maintaining absolute control over the generated SQL.
 
 ---
 
-## ✨ Key Features
+### 🚀 Introduction & Value Proposition
 
-* **Intuitive Method Chaining:** Write queries that look like English.
-* **Security First:** Automatic escaping and built-in protection for `UPDATE` and `DELETE` (no accidental "truncate everything").
-* **Smart SQL Engine:** Automatic backticks, clause ordering, and dependency injection for DB drivers.
-* **Advanced Logic:** Supports nested `WHERE` conditions, complex `JOINS`, and `UNION`.
-* **Atomic Transactions:** Integrated `callDB` handles transactions and rollbacks automatically for multi-query operations.
-* **Zero Dependencies:** Extremely lightweight and fast.
+In the world of PHP, developers often face a choice: write raw SQL (which is fast but error-prone) or use a heavy ORM (which is safe but can be slow and memory-intensive). **Lno** bridges this gap.
+
+#### Why Choose Lno?
+- **Lightweight & Fast:** Zero hydration overhead. Lno returns clean arrays, making it ideal for high-performance applications and real-time reporting.
+- **Fluent Logic:** Build complex `WHERE` clauses with nested `AND/OR` logic using simple, intuitive array structures.
+- **Advanced SQL Support:** Native support for Common Table Expressions (CTEs), nested subqueries, and `INSERT SELECT` operations that many micro-libraries lack.
+- **Atomic Operations:** Built-in transaction management ensures that multi-query operations are executed safely or not at all.
 
 ---
 
-## 🛠 Installation & Setup
+### 📦 Installation & Configuration
 
-### Requirements
-
-* **PHP:** 8.2 or higher.
-* **Database:** MySQL (PostgreSQL support coming soon).
-
-### Install via Composer
-
+#### Installation via Composer
 ```bash
 composer require mohamedsaleh077/lno
-
 ```
 
-### Quick Start
+#### Manual Installation
+If you prefer not to use Composer, you can include the source files directly:
+```php
+require_once 'src/DatabaseInterface.php';
+require_once 'src/QueryBuilderHelper.php';
+require_once 'src/OP.php';
+require_once 'src/QueryBuilder.php';
+```
+
+#### Initializing the Library
+Lno requires an implementation of `DatabaseInterface`. You can use the provided `MySQL_Driver` or create your own.
 
 ```php
-use mohamedsaleh077\lno\QueryBuilder;
-use mohamedsaleh077\lno\MySQL_Driver;
+use Mohamedsaleh077\Lno\QueryBuilder;
+use Mohamedsaleh077\Lno\MySQL_Driver;
 
-$driver = new MySQL_Driver(); 
-$db = new QueryBuilder($driver); 
-
-// Simple Select
-$result = $db->select("users")
-             ->where(["id", "=", "user_id"])
-             ->callDB(["user_id" => 12]);
-
-// Resulting SQL: SELECT * FROM `users` WHERE `id` = :user_id
-
+// Initialize the driver with a path to your config.ini
+$db = new MySQL_Driver('/config.ini'); 
+$qb = new QueryBuilder($db);
 ```
 
 ---
 
-## 📖 Detailed Usage Guide
+### 🛠 Mastering Complex Queries
 
-### 1. The `SELECT` Clause
-
-LNO handles aliases and raw expressions effortlessly using `{}` for escaping.
+#### 1. Advanced SELECTs & Nested Logic
+Lno excels at building complex `WHERE` clauses. You can nest arrays to create grouped logic.
 
 ```php
-$columns = [
-    "username",                      // `username`
-    "p.title" => "post_title",      // `p`.`title` AS `post_title`
-    "{COUNT(*)}" => "total"         // Raw: COUNT(*) AS `total`
-];
-
-$db->select(["users", "u"], $columns);
-// SQL: SELECT `username`, `p`.`title` AS `post_title`, COUNT(*) AS `total` FROM `users` AS `u`
-
+$results = $qb->select('orders', ['id', 'total', 'status'])
+    ->where([
+        ['status', '=', 'shipped'],
+        'AND',
+        [
+            ['total', '>', 100],
+            'OR',
+            ['customer_type', '=', 'VIP']
+        ]
+    ])
+    ->order(['created_at' => 'DESC'])
+    ->limit(20)
+    ->callDB(true); // true returns all results (fetchAll)
 ```
 
-### 2. Advanced `WHERE` Conditions
-
-Supports simple arrays or complex nested logic.
+#### 2. Common Table Expressions (CTEs)
+Use `withSQL()` to build high-performance `WITH` clauses for complex data processing.
 
 ```php
-// Complex nested: WHERE (status = 1) AND (age < 18 OR role = 'guest')
-$db->select("users")->where([
-    ["status", "=", "active"],
-    "AND", [
-        ["age", "<", "limit"],
-        "OR",
-        ["role", "=", "guest"]
-    ]
-]);
+$sub = $qb->subQuery()
+    ->select('sales', ['region', '{SUM(amount)}' => 'total_sales'])
+    ->groupBy('region');
 
+$qb->withSQL([
+    'regional_revenue' => "{$sub}"
+])
+->select('regional_revenue')
+->where(['total_sales', '>', 50000])
+->callDB(true);
 ```
 
-### 3. Joins & Relationships
+#### 3. Subqueries in SELECT, WHERE, and ORDER BY
+The `subQuery()` method allows you to create independent builder instances that can be injected into your main query as strings.
 
 ```php
-$db->select(["posts", "p"])
-   ->join(["users" => "u", "p.user_id", "u.id"], "inner")
-   ->join(["comments" => "c", "c.post_id", "p.id"], "left");
+$latestOrder = $qb->subQuery()
+    ->select('orders', ['id'])
+    ->where(['user_id', '=', '{users.id}'])
+    ->order(['created_at' => 'DESC'])
+    ->limit(1);
 
+$users = $qb->select('users', ['id', 'username', "({$latestOrder})" => 'latest_order_id'])
+    ->where(['status', '=', 'active'])
+    ->callDB(true);
 ```
 
-### 4. Insert, Update, & Delete
+#### 4. INSERT SELECT & Batch Operations
+Pipe data between tables efficiently or perform multi-row inserts.
 
-LNO ensures your write operations are structured and safe.
-
-| Action | Example Code |
-| --- | --- |
-| **Insert** | `$db->insert("users", ["name", "email"])->values(["John", "j@ex.com"]);` |
-| **Update** | `$db->update("users", ["status"])->where(["id", "=", "id"]);` |
-| **Delete** | `$db->delete("users")->where(["id", "=", "id"]);` |
-
-> ⚠️ **Note:** `UPDATE` and `DELETE` require a `where()` clause to execute, preventing accidental data loss.
-
----
-
-## ⚡ Database Execution (`callDB`)
-
-The `callDB` method is the brain of LNO. It executes your queries within a **Transaction** context.
-
+**INSERT SELECT:**
 ```php
-// For a single query
-$res = $db->callDB(["id" => 5]);
-
-// For multiple queries (Automatic Transaction/Rollback)
-$params = [
-    ["id" => 1],           // Params for Query 1
-    ["status" => "active"] // Params for Query 2
-];
-$res = $db->callDB($params, true); // true to fetch all rows
-
+$qb->insert('archive_users', ['id', 'username', 'email'])
+    ->select('users', ['id', 'username', 'email'])
+    ->where(['deleted_at', 'IS NOT', '{NULL}'])
+    ->callDB();
 ```
 
-### Response Structure
+**Batch INSERT:**
+```php
+$qb->insert('logs', ['level', 'message'])
+    ->values(['INFO', 'User logged in'])
+    ->values(['WARN', 'Failed login attempt'])
+    ->values(['ERROR', 'Database timeout'])
+    ->callDB();
+```
 
-Every execution returns a structured array:
+#### 5. Raw SQL Integration
+Safely mix raw SQL while maintaining parameter binding for your own variables. Wrap raw SQL fragments in `{}` to tell Lno not to escape or parameterize them.
 
 ```php
-[
-    "ok"      => (bool),   // Success status
-    "lastID"  => (int),    // Last Inserted ID (if applicable)
-    "edited"  => (int),    // Number of affected rows
-    "len"     => (int),    // Result count
-    "results" => (array)   // Data rows from SELECT
-]
-
+$qb->select('products', ['id', 'name', '{PRICE * 1.1}' => 'inflated_price'])
+    ->where(['category_id', '=', 5])
+    ->rawSQL("AND stock_count > 0")
+    ->callDB(true);
 ```
 
 ---
 
-## 🛡 Security & Best Practices
+### 🛡 Transaction Management
 
-* **Escaping:** Use `{}` to pass raw SQL fragments safely when needed.
-* **Warnings:** Enabled by default. Use `$db->enableWarnings(false)` to silence.
-* **Transactions:** LNO automatically rolls back all queries in a `callDB` batch if one fails.
+Lno ensures **Atomicity** through its `callDB()` flow. Every operation added to the builder before calling `callDB()` is treated as part of a single database transaction.
+
+1. **Queuing:** Methods like `insert()`, `update()`, or `delete()` queue queries.
+2. **Execution:** `callDB()` begins a transaction.
+3. **Safety:** It iterates through all queued queries. If any query fails, an exception is thrown and the transaction is **rolled back**.
+4. **Completion:** If all queries succeed, the transaction is **committed**.
+
+```php
+// Transferring balance between accounts
+$qb->update('accounts', ['balance' => 500])->where(['id', '=', 1]);
+$qb->update('accounts', ['balance' => 1500])->where(['id', '=', 2]);
+
+// Both updates are executed within a single transaction
+$qb->callDB();
+```
 
 ---
 
-## 🤝 Contributing
+### 🔒 Security & Parameter Binding
 
-Found a bug or want to add PostgreSQL support?
+Lno takes security seriously by implementing an intelligent **Automatic Parameterization** system.
 
-1. Fork the repo.
-2. Create a feature branch.
-3. Submit a Pull Request.
+- **Auto-binding:** Every value passed to `where()`, `values()`, or `update()` is automatically converted to a PDO placeholder (`:p0`, `:p1`, etc.).
+- **Parameter Reordering:** When building complex queries with subqueries, the order in which parameters are defined might not match their appearance in the final SQL. Lno's `paramSetter` uses regex to scan the final SQL and reorder the parameter array to match the execution plan perfectly.
+- **SQL Injection Prevention:** By enforcing PDO prepared statements for all user-provided data, Lno effectively mitigates SQL injection risks.
 
-**Created by:** [Mohamed Saleh](https://mohamedsaleh077.github.io/)
+---
+
+### 📊 Comparison with Eloquent/Doctrine
+
+| Feature | Lno | Eloquent / Doctrine |
+| :--- | :--- | :--- |
+| **Performance** | **Ultra-Fast** (Direct PDO, Array output) | Slower (Object hydration, Active Record overhead) |
+| **Memory Usage** | **Minimal** | High (due to object management) |
+| **Complex SQL** | Native support for CTEs & Subqueries | Often requires raw queries or complex wrappers |
+| **Learning Curve** | Low (SQL-like fluent API) | High (Learning the ORM's specific DSL) |
+| **Reporting** | Excellent for heavy data processing | Can struggle with large datasets |
+| **Setup** | Zero-config, lightweight | Complex configuration and mapping |
+
+---
+
+### 🤝 Contribution Guide
+
+We welcome contributions! To maintain code quality, please follow these guidelines:
+
+#### Architecture Overview
+- **`OP.php`:** The engine. Handles query string concatenation, parameter collection, and the `callDB()` transaction flow.
+- **`QueryBuilder.php`:** The user-facing API. Responsible for translating fluent methods into structured arrays for `OP`.
+- **`QueryBuilderHelper.php`:** A trait containing utility methods for dot-notation parsing, aliasing validation, and error/warning handling.
+
+#### Standards
+- Follow PSR-12 coding standards.
+- Ensure all new features include unit tests in the `Testing/` directory.
+- Use `errorHandler()` for critical syntax issues and `warningHandler()` for non-breaking suggestions.
+
+---
+
+*Documentation generated by AI for Lno Query Builder.*
