@@ -1,0 +1,33 @@
+name: example
+services:
+  postgresql:
+    image: postgres:14.21-alpine3.23
+    container_name: postgresql
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    command: [ "postgres", "-c", "log_statement=none", "-c", "log_min_duration_statement=1000", "-c", "log_connections=on", "-c", "log_disconnections=on" ]
+    healthcheck:
+      test: [ "CMD-SHELL", 'pg_isready -U "$${POSTGRES_USER:-postgres}" -d "$${POSTGRES_DB:-postgres}" -h localhost || exit 1' ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    stop_grace_period: 120s
+    environment:
+      - POSTGRES_DB=main_db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: mypgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "8081:80"
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    links:
+      - postgresql

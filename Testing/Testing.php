@@ -1,8 +1,10 @@
 <?php
 require_once '../vendor/autoload.php';
 require_once "./Mockdb.php";
+require_once "./PG_Driver.php";
+
+use Mohamedsaleh077\Lno\PG_Driver;
 use Mohamedsaleh077\Lno\QueryBuilder;
-use Mohamedsaleh077\Lno\MySQL_Driver;
 
 Class Testing extends QueryBuilder{
     public function getParams(){
@@ -17,6 +19,9 @@ Class Testing extends QueryBuilder{
     }
 }
 
-$t = new Testing(new \Mohamedsaleh077\Testing\Mockdb());
-$t->update("table", ["t"=>"value"])->where(["i", "=", 5])
-    ->callDB();
+//$t = new Testing(new PG_Driver());
+//$t->update("table", ["t"=>"value"])->where(["i", "=", 5])
+//    ->callDB();
+
+$db = new PG_Driver();
+$db::getConnection();
