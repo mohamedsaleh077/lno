@@ -11,7 +11,15 @@ Database with the most secure way and Best practicies. also Lightweight you know
 ## Why I made LNO?
 I just wanted to keep using pure PHP until I become good enough in OOP, MVC and most of 
 backend concepts that Framework hide from you.
-I started with a very basic one but I found it useless so I remade it.
+I started wit h a very basic one but I found it useless so I remade it.
+
+## NEW Features
+- Add SubQuery Support.
+- Add auto generating for params and order them.
+- Add mock files for testing.
+- Refactoring code by separating responsibilities.
+- Remove UNION.
+- Add WITH support to SQL.
 
 ## Features
 - MySQL support by Default (I will add PostgreSQL later...).
@@ -19,7 +27,7 @@ I started with a very basic one but I found it useless so I remade it.
 - RAW SQL with {} for escaping.
 - Multi-Query Support.
 - Advanced Nested where conditions.
-- UNION Support.
+- ~~UNION Support.~~
 - Issues handler, to protect your db.
 - Method Chaining.
 - Automatic Backticks.
@@ -35,13 +43,6 @@ I started with a very basic one but I found it useless so I remade it.
 
 ## Quick Start
 - Just use composer, install the package `mohamedsaleh077/lno`.
-```json
-...
-"require": {
-  "mohamedsaleh077/lno": "1.0.0",
-...
-```
-or
 ```bash
  $ composer require mohamedsaleh077/lno
 ```
@@ -55,10 +56,10 @@ use mohamedsaleh077/lno/MySQL_Driver;
 $driver = new MySQL_Driver(); // for default db driver (MySQL)
 $sql = new QueryBuilder($driver); 
 $result = $sql->select("users")
-                ->where(["id", "=", "id"])
-                ->callDB(["id" => 12])
+                ->where(["id", "=", 2])
+                ->callDB()
 ```
-expected result for the SQL: `SELECT * FROM users WHERE id = :id`.
+expected result for the SQL: `SELECT * FROM users WHERE id = :p1`.
 
 ## All use cases Explaining
 ### Warnings Enable
@@ -74,13 +75,11 @@ to make a another query and will make two queries when you execute it.
 - writing two where (as an example) in the same query,
 will lead to override it, join is excluded.
 - passing the a non supported formating param will lead to unexcpected behaviours.
-- for the last inserted id, `$driver::lastInsertId`
 
 ### SELECT Part
 - you need to define the table (Optional, table and its alias)
 ```php
 $sql->select("table name");
-
 $sql->select(["tablename", "alias"]); // for aliasing
 ```
 - when you are not defining the columns, it will use * as default.
@@ -116,40 +115,40 @@ FROM `tablename` AS `alias`
 ### WHERE Part
 - for simple conditions:
 ```php
-$sql->select("table")->where(["table.col", ">", "parm1"];
+$sql$t->select("table")->where(["table.col", ">", 34]);
 ```
 result
 ```sql
 SELECT * FROM `table`
-WHERE `table`.`col` > :param1
+WHERE `table`.`col` > :p2
 ```
 
 - for Advanced Nested Conditions
 ```php
-$sql->select("table")
-    ->where([ 
-                ["table.col", ">", "parm1"], 
-                "and" [
-                        ["num", "not", "null"], 
-                        "or", 
-                        ["table.col", "<", "parm2"]
-                ]   
-            ];
+$t->select("table")
+    ->where([
+        ["table.col", ">", 15],
+        "and", [
+        ["num", "not", "null"],
+        "or",
+        ["table.col", "<", "value"]
+        ]
+    ])
 ```
 result
 ```sql
-SELECT * FROM `table`
-WHERE (`table`.`col` > :param1) AND ( (`num` NOT NULL) OR (`table`.`col` < :param2) )
+SELECT * FROM `table` 
+WHERE (`table`.`col` > :p2) AND ((`num` NOT NULL)  OR (`table`.`col` < :p4))
 ```
 
 - Also where supports RAW SQL.
 ```php
-$sql->select("table")->where(["table.col", "not between", "{15 AND 19}"];
+$sql->select("table")->where(["table.col", "=", "{RAWRAWRAW SQLLL}"]);
 ```
 result
 ```sql
-SELECT * FROM `table`
-WHERE `table`.`col` NOT BETWEEN (15 AND 19)
+SELECT * FROM `table` 
+WHERE `table`.`col` = (RAWRAWRAW SQLLL)
 ```
 
 ### JOIN Part
@@ -217,7 +216,7 @@ SELECT * FROM `users`
 LIMIT 1, 15
 ```
 
-### UNION Part
+### UNION Part (Deprecated)
 - accepts the word all (optional).
 - add it between two SELECTs
 ```php
@@ -232,6 +231,30 @@ UNION ALL
 SELECT * FROM `uploads`
 ```
 
+### WITH Part
+- read: https://dev.mysql.com/doc/refman/8.4/en/with.html
+```php
+$sub = $t->subQuery()
+        ->select('test')
+        ->where(["id", "=", 12]);
+        
+$withs = [
+    "cta1" => $sub,
+    "cta2" => $sub
+];
+
+$t->select("table")
+  ->where(["id", "=", 12])
+  ->withSQL($withs)
+```
+result
+```sql
+WITH 
+    cta1 AS ( SELECT * FROM `test` WHERE `id` = :p1 ),
+    cta2 AS ( SELECT * FROM `test` WHERE `id` = :p1 ) 
+SELECT * FROM `table`
+WHERE `id` = :p2 
+```
 ## raw SQL
 - if you need to write something is not supported. it will take the order that 
 you called it with
@@ -251,19 +274,18 @@ LIMIT 1, 14
 - you can use it with multiple values or with select.
 - insert wont work without either values or select.
 ```php
-$sql->insert("table_name", ["username", "fullname"])
+$t->insert("table_name", ["username", "fullname"])
     ->values(["u1", "f1"])
     ->values(["u2", "f2"])
-    ->values(["u3", "f3"]);
-])
+    ->values(["u3", "f3"])
 ```
 result
 ```sql
 INSERT INTO `table_name` (`username`, `fullname`)
-VALUES
-    (:u1, :f1),
-    (:u2, :f2),
-    (:u3, :f3)
+VALUES  
+    (:p2, :p3),
+    (:p4, :p5),
+    (:p6, :p7)
 ```
 or just combine with select.
 ```
@@ -274,11 +296,15 @@ $sql->insert(...)->select(...)->where(...)
 - accepts table name and array of columns.
 - wont work without where.
 ```php
-$sql->update("table", ["col1", "col2" => "c", "col3"]);
+$t->update("table", ["col1", "col2" => "c", "col3"])
+    ->where(["id", "<", 3])
+    ->callDB()
 ```
 result
 ```sql
-UPDATE `table` SET `col1` = :col1, `col2` = :c, `col3` = :col3
+UPDATE `table` 
+SET`0` = :p2, `col2` = :p3, `1` = :p4 
+WHERE `id` < :p5
 ```
 
 ### DELETE Part
@@ -286,28 +312,20 @@ UPDATE `table` SET `col1` = :col1, `col2` = :c, `col3` = :col3
 - must included with where.
 ```php
 $sql->delete("users")
-    ->where(["id", "=", "id"]);
+    ->where(["id", "=", 2]);
 ```
 result
 ```sql
 DELETE FROM `users`
-WHERE `id` = :id
+WHERE `id` = :p2
 ```
 
 ### Running the Query
-- To save the query (safty) use the method `saveQuery()` to add what you made to
-the query list, it will be called automaticly when you start another statment or
-using `callDB`.
-- when you use CallDB, you need to pass an array for your params.
-- if you made multiple queries, pass an array of arraies for each query, for example.
-- to fetch all just pass true in secound param, fetching one is the default.
-- `callDB` will make all the queries you made in a transaction, if one failed it will
-rollback again.
+- All Params are generated and assigend to values automaticly and beign passed
+while running the query.
+- you just need to define `true` for fetching all results.
 ```php
-$oneQuery = [ "id" => 3, "col1" => "nnanan" ];
-$manyQueries = [ ["c1" => 1 ], [], ["name" => "mohamed", "age" => 34] ];
-
-$result = $sql->callDB($manyQueries, true); // for example
+$result = $sql->callDB(true); // for example
 ```
 - results for each query will be in an array.
 - each query will have a result array formed as:
