@@ -98,6 +98,25 @@ class OP
         return $this;
     }
 
+    // written by AI errr
+    protected function paramSetter(string $sql, array $params): array
+    {
+        $finalParams = [];
+
+        preg_match_all('/:p\d+/', $sql, $matches);
+        $placeholdersInOrder = $matches[0];
+
+        foreach ($placeholdersInOrder as $placeholder) {
+            if (isset($params[$placeholder])) {
+                $finalParams[$placeholder] = $params[$placeholder];
+            }
+        }
+
+        return [
+            'sql' => $sql,
+            'params' => $finalParams
+        ];
+    }
 
     /**
      * Execute all Queries.
@@ -120,7 +139,8 @@ class OP
         try {
             $this->db::beginTransaction();
             foreach ($this->queries as $key => $value) {
-                $result[] = $this->db::Fetch($key, $value, $all);
+                $fixed = $this->paramSetter($key, $value);
+                $result[] = $this->db::Fetch($fixed["sql"], $fixed["params"], $all);
             }
             $this->db::commit();
             $this->queries = [];
