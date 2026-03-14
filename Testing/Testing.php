@@ -1,6 +1,6 @@
 <?php
 require_once '../vendor/autoload.php';
-
+require_once "./Mockdb.php";
 use Mohamedsaleh077\Lno\QueryBuilder;
 use Mohamedsaleh077\Lno\MySQL_Driver;
 
@@ -17,5 +17,6 @@ Class Testing extends QueryBuilder{
     }
 }
 
-$t = new Testing(new MySQL_Driver());
-echo $_SERVER['DOCUMENT_ROOT'];
+$t = new Testing(new \Mohamedsaleh077\Testing\Mockdb());
+$t->update("table", ["t"=>"value"])->where(["i", "=", 5])
+    ->callDB();

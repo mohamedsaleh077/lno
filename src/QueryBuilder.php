@@ -348,7 +348,7 @@ class QueryBuilder extends OP
                 $result[] = "`" . $key ."` = " . $this->setParams($value);
 
         }
-        $this->query["update"] =  "UPDATE `" . $table . "` SET" . implode(", ", $result);
+        $this->query["update"] =  "UPDATE `" . $table . "` SET " . implode(", ", $result);
         return $this;
     }
 

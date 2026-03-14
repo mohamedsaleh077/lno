@@ -298,15 +298,13 @@ $sql->insert(...)->select(...)->where(...)
 - accepts table name and array of columns.
 - wont work without where.
 ```php
-$t->update("table", ["col1", "col2" => "c", "col3"])
-    ->where(["id", "<", 3])
-    ->callDB()
+$t->update("table", ["t"=>"value"])->where(["i", "=", 5]);
 ```
 result
 ```sql
 UPDATE `table` 
-SET`0` = :p2, `col2` = :p3, `1` = :p4 
-WHERE `id` < :p5
+SET `t` = :p0 
+WHERE `i` = :p1
 ```
 
 ### DELETE Part
