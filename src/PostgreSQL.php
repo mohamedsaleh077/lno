@@ -132,4 +132,9 @@ implements DatabaseInterface
     {
         self::$connection = null;
     }
+
+    public static function DBType(): string
+    {
+        return "pgsql";
+    }
 }
