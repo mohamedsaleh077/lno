@@ -47,6 +47,17 @@ Trait QueryBuilderHelper{
         }
     }
 
+    protected function quote($value): string
+    {
+        if($this->db::DBType() === "mysql"){
+            return "`" . $value . "`";
+        }
+        if($this->db::DBType() === "pgsql"){
+            return '"' . $value . '"';
+        }
+        return $value;
+    }
+
     protected function dotSplitter(string $string): string
     {
         $string = trim($string, " ");
@@ -58,7 +69,7 @@ Trait QueryBuilderHelper{
                 $result = $this->starProcess($string);
                 break;
             case 2:
-                $part1 = "`" . $split[0] . "`";
+                $part1 =$this->quote($split[0]);
                 $part2 = $this->starProcess($split[1]);
                 $result = $part1 . "." . $part2;
                 break;
@@ -71,6 +82,6 @@ Trait QueryBuilderHelper{
         if ($string === "*") {
             return $string;
         }
-        return "`" . $string . "`";
+        return $this->quote($string);
     }
 }
