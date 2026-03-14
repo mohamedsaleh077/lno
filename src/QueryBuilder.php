@@ -74,7 +74,7 @@ class QueryBuilder extends OP
                 if ($firstCharKey === "{") {
                     $this->warningHandler(5000, $key);
                     $tmp = substr($key, 1, -1);
-                    $result[] = $tmp . " AS `" . trim($value) . "`";
+                    $result[] = $tmp . " AS " . $this->quote(trim($value)) ;
                     continue;
                 }
                 if ($key[0] == "*") {
@@ -87,15 +87,15 @@ class QueryBuilder extends OP
                 if ($columnFiltered[strlen($columnFiltered) - 1] === "*") {
                     $this->errorHandler(1002, $columnFiltered);
                 }
-                $result[] = $columnFiltered . " AS `" . trim($value) . "`";
+                $result[] = $columnFiltered . " AS " . $this->quote(trim($value));
             }
         }
-        $columnsString = implode(",", $result);
+        $columnsString = implode(", ", $result);
 
         if (is_array($tableName)) {
-            $tableName = implode("` AS `", $tableName);
+            $tableName = implode(" AS ", $this->quote($tableName));
         }
-        $this->query["select"] = "SELECT " . $columnsString . " FROM `" . $tableName . "`";
+        $this->query["select"] = "SELECT " . $columnsString . " FROM " . $this->quote($tableName) ;
         return $this;
     }
 
@@ -251,14 +251,14 @@ class QueryBuilder extends OP
                     $this->warningHandler(5000, $value);
                     $result[] = "(" . substr($value, 1, -1) . ")";
                 }else{
-                    $result[] = "`" . $value . "`";
+                    $result[] = $this->quote($value);
                 }
             }else{
                 if(str_starts_with($key, "{")) {
                     $this->warningHandler(5000, $key);
                     $result[] = "(" . substr($key, 1, -1) . ") " . strtoupper($value);
                 }else{
-                    $result[] = "`" . $key . "` " . strtoupper($value);
+                    $result[] =  $this->quote($key) . " " . strtoupper($value);
                 }
             }
         }
@@ -274,7 +274,7 @@ class QueryBuilder extends OP
      */
     public function limit(int $limit, int $offset = 0): self
     {
-        $this->query["limit"] = "LIMIT $offset, $limit";
+        $this->query["limit"] = "LIMIT $limit OFFSET $offset";
         return $this;
     }
 
@@ -302,8 +302,8 @@ class QueryBuilder extends OP
         if(!empty($this->query)){
             $this->saveQuery();
         }
-        $fields = "`" . implode("`, `", $columns) . "`";
-        $this->query["insert"] = " INSERT INTO `" . $tableName . "` (" . $fields . ")";
+        $fields = implode(", ", $this->quote($columns));
+        $this->query["insert"] = " INSERT INTO " . $this->quote($tableName) . " (" . $fields . ")";
         return $this;
     }
 
@@ -345,10 +345,10 @@ class QueryBuilder extends OP
 
         $result = [];
         foreach($columns as $key => $value){
-                $result[] = "`" . $key ."` = " . $this->setParams($value);
+                $result[] =  $this->quote($key) ." = " . $this->setParams($value);
 
         }
-        $this->query["update"] =  "UPDATE `" . $table . "` SET " . implode(", ", $result);
+        $this->query["update"] =  "UPDATE " . $this->quote($table) . " SET " . implode(", ", $result);
         return $this;
     }
 
@@ -362,7 +362,7 @@ class QueryBuilder extends OP
         if(!empty($this->query)){
             $this->saveQuery();
         }
-        $this->query["delete"] = " DELETE FROM `" . $table . "` ";
+        $this->query["delete"] = " DELETE FROM " . $this->quote($table);
         return $this;
     }
 
