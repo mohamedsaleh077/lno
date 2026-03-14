@@ -34,4 +34,9 @@ implements DatabaseInterface
         echo "rollback transaction...\n";
         return true;
     }
+
+    public static function DBType(): string
+    {
+        return "mysql";
+    }
 }
