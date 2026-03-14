@@ -22,6 +22,17 @@ class OP
         return "{ " . $this->buildQuery() . " }";
     }
 
+    protected function setParams($value): string
+    {
+        if($this->subOb === true){
+            return $this->parent->setParams($value);
+        }
+        $result = ":p" . $this->paramsCount;
+        $this->params[$result] = $value;
+        $this->paramsCount++;
+        return $result;
+    }
+
     public function buildQuery() : string
     {
         $result = [];
@@ -120,11 +131,7 @@ class OP
 
     /**
      * Execute all Queries.
-     * * @param array $params for placeholders and values.
-     * notes:
-     * - [ ["p1" => "val1"], ["p2", "val2"] ]=> set val1 for :p1 in the first query, set val2 for :p2 in the secound one.
-     * - each query should have its array, [ [values for 1st query], [2ed query]]
-     * - for one query, just normal array ["user" => "username"] etc..
+     * * @param bool $all default false for defining fetchAll
      * * @return array return the results.
      */
     public function callDB(bool $all = false) : array
