@@ -21,7 +21,7 @@ implements DatabaseInterface
      */
     public function __construct() {
         $dotenv = Dotenv::createImmutable((isset($_SERVER['DOCUMENT_ROOT'])) ? __DIR__ . "/../" : $_SERVER['DOCUMENT_ROOT']);
-        $dotenv->load();
+        $dotenv->safeLoad();
     }
     // check for connection
     public static function getConnection(): PDO
@@ -38,17 +38,17 @@ implements DatabaseInterface
     {
         $dsn = sprintf(
             'mysql:host=%s;port=%s;dbname=%s;charset=%s',
-            $_ENV['MYSQL_HOST'] ?? 'localhost',
-            $_ENV['MYSQL_PORT'] ?? 3306,
-            $_ENV['MYSQL_DATABASE'],
-            $_ENV['MYSQL_CHARSET'] ?? 'utf8'
+            $_ENV['MYSQL_HOST'] ?? getenv('MYSQL_HOST') ?? 'localhost',
+            $_ENV['MYSQL_PORT'] ?? getenv('MYSQL_PORT') ?? 3306,
+            $_ENV['MYSQL_DATABASE'] ?? getenv('MYSQL_DATABASE'),
+            $_ENV['MYSQL_CHARSET'] ?? getenv('MYSQL_CHARSET') ??'utf8'
         );
 
         try {
             self::$connection = new PDO(
                 $dsn,
-                $_ENV['MYSQL_USER'],
-                $_ENV['MYSQL_PASSWORD'],
+                $_ENV['MYSQL_USER'] ?? getenv('MYSQL_USER'),
+                $_ENV['MYSQL_PASSWORD'] ?? getenv('MYSQL_PASSWORD'),
                 [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
