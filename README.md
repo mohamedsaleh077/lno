@@ -20,6 +20,7 @@ I started wit h a very basic one but I found it useless so I remade it.
 - Refactoring code by separating responsibilities.
 - Remove UNION.
 - Add WITH support to SQL.
+- Add PostgreSQL support.
 
 ## Features
 - MySQL support by Default (I will add PostgreSQL later...).
@@ -49,12 +50,15 @@ I started wit h a very basic one but I found it useless so I remade it.
 - import to your code.
 ```php
 use mohamedsaleh077/lno/QueryBuilder;
-use mohamedsaleh077/lno/MySQL_Driver;
+use mohamedsaleh077/lno/MySQL;
+use mohamedsaleh077/lno/PostgreSQL;
 ```
 - example for select statement
 ```php
-$driver = new MySQL_Driver(); // for default db driver (MySQL)
-$sql = new QueryBuilder($driver); 
+$mysqlDriver = new MySQL();
+$postgresDriver = new PostgreSQL();
+
+$sql = new QueryBuilder($mysqlDriver); 
 $result = $sql->select("users")
                 ->where(["id", "=", 2])
                 ->callDB()
