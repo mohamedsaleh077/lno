@@ -3,7 +3,7 @@ require_once '../vendor/autoload.php';
 require_once "./Mockdb.php";
 require_once "./PG_Driver.php";
 
-use Mohamedsaleh077\Lno\PG_Driver;
+use Mohamedsaleh077\Lno\PostgreSQL;
 use Mohamedsaleh077\Lno\QueryBuilder;
 
 Class Testing extends QueryBuilder{
@@ -23,5 +23,5 @@ Class Testing extends QueryBuilder{
 //$t->update("table", ["t"=>"value"])->where(["i", "=", 5])
 //    ->callDB();
 
-$db = new PG_Driver();
+$db = new PostgreSQL();
 $db::getConnection();
