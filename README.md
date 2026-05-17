@@ -49,9 +49,9 @@ I started wit h a very basic one but I found it useless so I remade it.
 ```
 - import to your code.
 ```php
-use mohamedsaleh077\lno\QueryBuilder;
-use mohamedsaleh077\lno\MySQL;
-use mohamedsaleh077\lno\PostgreSQL;
+use Mohamedsaleh077\Lno\QueryBuilder;
+use Mohamedsaleh077\Lno\MySQL;
+use Mohamedsaleh077\Lno\PostgreSQL;
 ```
 - example for select statement
 ```php
